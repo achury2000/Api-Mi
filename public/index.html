@@ -49,15 +49,15 @@
           return;
         }
         usersMenu.innerHTML = `<table style="width:100%;border-collapse:collapse;">
-          <thead><tr><th style='text-align:left;'>Nombre</th><th style='text-align:left;'>Correo</th><th>Acciones</th></tr></thead>
+          <thead><tr><th style='text-align:left;'>Nombre</th><th style='text-align:left;'>Correo</th><th style='text-align:center;width:100px;padding-left:18px;'>Acciones</th></tr></thead>
           <tbody>
             ${users.map(u => `
               <tr>
-                <td><input type='text' value='${u.name}' id='name-${u._id}' style='width:90%;'></td>
-                <td><input type='email' value='${u.email}' id='email-${u._id}' style='width:90%;'></td>
-                <td>
-                  <button onclick="updateUser('${u._id}')">Actualizar</button>
-                  <button onclick="deleteUser('${u._id}')" style='background:#c0392b;margin-left:5px;'>Eliminar</button>
+                <td><input type='text' value='${u.name}' id='name-${u._id}' style='width:95%;padding:6px 8px;margin:4px 0;border-radius:4px;border:1px solid #ccc;'></td>
+                <td><input type='email' value='${u.email}' id='email-${u._id}' style='width:95%;padding:6px 8px;margin:4px 0;border-radius:4px;border:1px solid #ccc;'></td>
+                <td style='text-align:center;width:100px;padding-left:18px;'>
+                  <button onclick="updateUser('${u._id}')" title="Actualizar" style='background:#2980b9;color:#fff;border:none;padding:3px 7px;margin:2px 2px 2px 0;border-radius:4px;cursor:pointer;font-size:0.9rem;vertical-align:middle;'>✏️</button>
+                  <button onclick="deleteUser('${u._id}')" title="Eliminar" style='background:#c0392b;color:#fff;border:none;padding:3px 7px;margin:2px 0 2px 2px;border-radius:4px;cursor:pointer;font-size:0.9rem;vertical-align:middle;'>🗑️</button>
                 </td>
               </tr>
             `).join('')}
