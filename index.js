@@ -9,6 +9,9 @@ connectDB();
 
 const app = express();
 
+// Servir archivos estáticos de la carpeta public
+app.use(express.static('public'));
+
 app.use(cors());
 app.use(express.json());
 
