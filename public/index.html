@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API DE ACHURY</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 400px; margin: 40px auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { text-align: center; color: #2c3e50; }
+    label { display: block; margin-top: 1rem; color: #333; }
+    input { width: 100%; padding: 0.5rem; margin-top: 0.3rem; border: 1px solid #ccc; border-radius: 4px; }
+    button { width: 100%; margin-top: 1.5rem; padding: 0.7rem; background: #2980b9; color: #fff; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }
+    button:hover { background: #1a5a85; }
+    .user-info { margin-top: 2rem; background: #eaf6fb; padding: 1rem; border-radius: 4px; }
+    .error { color: #c0392b; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>API DE ACHURY</h1>
+    <form id="userForm">
+      <label for="name">Nombre</label>
+      <input type="text" id="name" name="name" required>
+      <label for="email">Correo</label>
+      <input type="email" id="email" name="email" required>
+      <button type="submit">Guardar</button>
+    </form>
+    <div class="error" id="error"></div>
+    <div class="user-info" id="userInfo" style="display:none;"></div>
+    <hr style="margin:2rem 0;">
+    <h2 style="text-align:center;">Usuarios registrados</h2>
+    <div id="usersMenu"></div>
+  </div>
+  <script>
+    const form = document.getElementById('userForm');
+    const userInfo = document.getElementById('userInfo');
+    const errorDiv = document.getElementById('error');
+    const usersMenu = document.getElementById('usersMenu');
+
+    async function fetchUsers() {
+      usersMenu.innerHTML = 'Cargando...';
+      try {
+        const res = await fetch('/api/users');
+        if (!res.ok) throw new Error('No se pudieron obtener los usuarios');
+        const users = await res.json();
+        if (!Array.isArray(users) || users.length === 0) {
+          usersMenu.innerHTML = '<em>No hay usuarios registrados.</em>';
+          return;
+        }
+        usersMenu.innerHTML = `<table style="width:100%;border-collapse:collapse;">
+          <thead><tr><th style='text-align:left;'>Nombre</th><th style='text-align:left;'>Correo</th><th>Acciones</th></tr></thead>
+          <tbody>
+            ${users.map(u => `
+              <tr>
+                <td><input type='text' value='${u.name}' id='name-${u._id}' style='width:90%;'></td>
+                <td><input type='email' value='${u.email}' id='email-${u._id}' style='width:90%;'></td>
+                <td>
+                  <button onclick="updateUser('${u._id}')">Actualizar</button>
+                  <button onclick="deleteUser('${u._id}')" style='background:#c0392b;margin-left:5px;'>Eliminar</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`;
+      } catch (err) {
+        usersMenu.innerHTML = `<span class='error'>${err.message}</span>`;
+      }
+    }
+
+    async function updateUser(id) {
+      const name = document.getElementById(`name-${id}`).value;
+      const email = document.getElementById(`email-${id}`).value;
+      try {
+        const res = await fetch(`/api/users/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email })
+        });
+        if (!res.ok) throw new Error('Error al actualizar usuario');
+        await fetchUsers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
+      try {
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Error al eliminar usuario');
+        await fetchUsers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorDiv.textContent = '';
+      userInfo.style.display = 'none';
+      const name = form.name.value;
+      const email = form.email.value;
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email })
+        });
+        if (!res.ok) throw new Error('Error al guardar usuario');
+        const data = await res.json();
+        userInfo.innerHTML = `<strong>Usuario guardado:</strong><br>Nombre: ${data.name}<br>Correo: ${data.email}`;
+        userInfo.style.display = 'block';
+        form.reset();
+        await fetchUsers();
+      } catch (err) {
+        errorDiv.textContent = err.message;
+      }
+    });
+
+    // Cargar usuarios al iniciar
+    fetchUsers();
+  </script>
+</body>
+</html>
